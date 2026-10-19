@@ -5,6 +5,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3101),
   /** Conexión del pooler de Supabase en modo transacción (puerto 6543). */
   DATABASE_URL: z.url(),
+  /** Conexiones por instancia (en serverless conviene 1–2). */
+  DB_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
   /** URL del proyecto, p. ej. https://xxxx.supabase.co */
   SUPABASE_URL: z.url(),
   /** Origen permitido para CORS (frontend). */

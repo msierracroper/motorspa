@@ -45,6 +45,14 @@ La fuente de verdad es [SPEC.md](SPEC.md). Léelo antes de proponer o escribir c
 - `packages/shared` — permisos, roles y tipos compartidos.
 - `supabase/` — migraciones y `seed.sql`.
 
+## Reglas de negocio y pruebas
+
+- Las reglas puras (parqueo, descuentos, estados de la orden, arqueo, formatos) viven en `packages/shared/src` con pruebas: la API y la UI usan el mismo cálculo.
+- Los contratos de entrada son esquemas Zod en `packages/shared/src/schemas.ts`; en NestJS se validan con `ZodPipe`.
+- `apps/api/test/db/` prueba con **PGlite** (Postgres embebido) aplicando las migraciones y seeds reales: RLS, restricciones y el flujo completo con los servicios reales (`flow.spec.ts`). Toda migración nueva debe pasar ahí antes de entregarla al usuario.
+- Las restricciones que el usuario puede provocar se traducen a 409 con mensaje claro en `common/db-errors.ts`.
+- Plan y decisiones de la Fase 1: `docs/FASE-1.md`.
+
 ## Comandos
 
 - Puertos locales: web **3100**, API **3101** (el 3000 lo usa otro proyecto del usuario).

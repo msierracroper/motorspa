@@ -21,7 +21,10 @@ export class DbService implements OnModuleDestroy {
 
   constructor(config: ConfigService<Env, true>) {
     // prepare: false es obligatorio con el pooler en modo transacción.
-    this.client = postgres(config.get('DATABASE_URL'), { prepare: false, max: 5 });
+    this.client = postgres(config.get('DATABASE_URL'), {
+      prepare: false,
+      max: config.get('DB_POOL_MAX'),
+    });
     this.db = drizzle(this.client, { schema });
   }
 

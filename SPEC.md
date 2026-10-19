@@ -531,15 +531,17 @@ motospa/
 | 17 | 2026-10-19 | El nombre de usuario es único en todo el sistema (no solo por tenant) y el `tenant_id` viaja en `app_metadata` del usuario de Supabase Auth | El correo sintético es global; `app_metadata` no es editable por el usuario |
 | 19 | 2026-10-19 | Dirección visual **"Espuma"**: blanco + azul agua (`#0a7fc2` → `#12b5c9`), tarjetas suaves y redondeadas, Bricolage Grotesque (títulos) + Figtree (texto), solo tema claro. La placa de moto es el ancla visual, en amarillo suave "Mantequilla" (`#fbe7a1`) en lugar del amarillo real | Elegida por el usuario entre 3 propuestas (Pista, Garaje, Espuma); el amarillo real se percibía chillón |
 | 20 | 2026-10-19 | Frontend migrado de Next.js 16 a **Vite + React 19 (SPA)** con React Router 7 y TanStack Query 5, siguiendo la estructura de GenericSoft (`src/api`, `src/app`, `src/features`). La sesión de Supabase vive en el navegador; el backend sigue verificando cada petición | App interna detrás de login: no necesita SSR ni SEO; las reglas de Cache Components de Next 16 añadían complejidad; alineación con los demás proyectos del usuario. Respaldo de la versión Next en el commit `09366cf` |
+| 21 | 2026-10-19 | **Fase 1 implementada con datos de prueba** (decisiones D-1 a D-15 en `docs/FASE-1.md`): rangos de cc ≤150 / 151–400 / >400; tarifa de parqueo por fracción de 30 min ($1.000, nocturna 19–06 $1.500, gracia 10 min, tope $12.000/24 h, cortesía de lavado +30 min); límites de descuento Cajero 10 %/$5.000, Supervisor 30 %, Admin 100 % con autorización por PIN; `employees` mínima desde la Fase 1; entrega solo con pago completo; fotos de check-in fuera de la Fase 1 | El usuario autorizó avanzar con las decisiones recomendadas; todos los valores son configurables en la base de datos |
+| 22 | 2026-10-19 | Pruebas de base de datos con **PGlite** (Postgres embebido) aplicando las migraciones reales: RLS, reglas SQL y flujo completo con los servicios de NestJS | Verificar esquema y reglas sin tocar el Supabase del usuario |
 | 18 | 2026-10-19 | Los SQL de `supabase/migrations/` son la fuente de verdad del esquema; `apps/api/src/db/schema.ts` (Drizzle) es solo un espejo para consultas | El usuario ejecuta los scripts manualmente (decisión 14) |
 
 ### Preguntas abiertas (resolver antes o durante la Fase 0/1)
 - [x] ¿Prisma o Drizzle? → Drizzle (decisión 11)
 - [x] ¿Backend NestJS separado o API dentro de Next.js? → NestJS separado (decisión 11)
-- [ ] ¿Rangos de cilindraje exactos y lista inicial de servicios y precios?
-- [ ] ¿Tarifas de parqueo reales (fracción, gracia, tope, nocturna)?
+- [ ] ¿Rangos de cilindraje exactos y lista inicial de servicios y precios? → provisional D-1/D-2 (datos de prueba)
+- [ ] ¿Tarifas de parqueo reales (fracción, gracia, tope, nocturna)? → provisional D-3/D-4 (datos de prueba)
 - [ ] ¿Regla de comisión: porcentaje o valor fijo, y sobre el precio lleno o sobre el cobrado?
-- [ ] ¿Las fotos en el check-in son obligatorias?
+- [ ] ¿Las fotos en el check-in son obligatorias? → provisional D-10: opcionales, fuera de la Fase 1
 - [ ] ¿Impresora térmica disponible (modelo, 58 u 80 mm)?
 - [ ] ¿Nombre comercial definitivo del producto?
 
