@@ -16,7 +16,9 @@ describe('migración foundations (Postgres real con PGlite)', () => {
   afterAll(() => db.close());
 
   it('siembra los 24 permisos y los 4 roles del sistema', async () => {
-    const perms = await db.query<{ n: number }>('select count(*)::int as n from public.permissions');
+    const perms = await db.query<{ n: number }>(
+      'select count(*)::int as n from public.permissions',
+    );
     const roles = await db.query<{ n: number }>(
       'select count(*)::int as n from public.roles where is_system',
     );

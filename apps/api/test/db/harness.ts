@@ -29,7 +29,9 @@ export async function createTestDb(): Promise<PGlite> {
   for (const file of migrations) {
     await db.exec(readFileSync(join(root, 'migrations', file), 'utf8'));
   }
-  await db.exec(readFileSync(join(root, 'seed.sql'), 'utf8'));
+  for (const seed of ['seed.sql', 'seed_fase1.sql']) {
+    await db.exec(readFileSync(join(root, seed), 'utf8'));
+  }
   return db;
 }
 
