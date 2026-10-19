@@ -3,10 +3,13 @@ import { getAccessToken } from './auth';
 export class ApiError extends Error {
   /** Código HTTP; 0 cuando no hubo conexión con el servidor. */
   readonly status: number;
+  /** Código de negocio opcional (p. ej. DISCOUNT_AUTH_REQUIRED). */
+  readonly code: string | undefined;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code?: string) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -32,8 +35,24 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   }
 
   if (!res.ok) {
-    const body = (await res.json().catch(() => null)) as { message?: string } | null;
-    throw new ApiError(res.status, body?.message ?? res.statusText);
+    const body = (await res.json().catch(() => null)) as {
+      message?: string | { message?: string; code?: string };
+      code?: string;
+    } | null;
+    // Nest anida el objeto de la excepción en `message` cuando se lanza con un objeto.
+    const nested = typeof body?.message === 'object' ? body.message : null;
+    const message =
+      nested?.message ?? (typeof body?.message === 'string' ? body.message : res.statusText);
+    throw new ApiError(res.status, message, nested?.code ?? body?.code);
   }
-  return (await res.json()) as T;
+  const text = await res.text();
+  return (text ? JSON.parse(text) : null) as T;
+}
+
+export function apiSend<T>(
+  path: string,
+  body?: unknown,
+  method: 'POST' | 'PATCH' | 'PUT' = 'POST',
+) {
+  return apiFetch<T>(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
 }

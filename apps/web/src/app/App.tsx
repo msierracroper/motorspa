@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { lazy, Suspense, type ReactNode } from 'react';
+import {
+  lazy,
+  Suspense,
+  type ComponentType,
+  type LazyExoticComponent,
+  type ReactNode,
+} from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { signOut, useSession } from '@/api/auth';
 import { ApiError } from '@/api/client';
@@ -14,6 +20,22 @@ const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const InicioPage = lazy(() => import('@/features/inicio/InicioPage'));
 const ModulePlaceholder = lazy(() => import('@/features/modulos/ModulePlaceholder'));
 const NotFoundPage = lazy(() => import('@/features/modulos/NotFoundPage'));
+const OrderDetailPage = lazy(() => import('@/features/ordenes/OrderDetailPage'));
+const TicketPage = lazy(() => import('@/features/ticket/TicketPage'));
+
+/** Pantallas construidas (Fase 1). Los demás módulos muestran "En construcción". */
+const PAGES: Record<string, LazyExoticComponent<ComponentType>> = {
+  '/recepcion': lazy(() => import('@/features/recepcion/RecepcionPage')),
+  '/ordenes': lazy(() => import('@/features/ordenes/OrdenesPage')),
+  '/mis-servicios': lazy(() => import('@/features/mis-servicios/MisServiciosPage')),
+  '/caja': lazy(() => import('@/features/caja/CajaPage')),
+  '/parqueadero': lazy(() => import('@/features/parqueadero/ParqueaderoPage')),
+  '/clientes': lazy(() => import('@/features/clientes/ClientesPage')),
+  '/catalogo': lazy(() => import('@/features/catalogo/CatalogoPage')),
+  '/reportes': lazy(() => import('@/features/reportes/ReportesPage')),
+};
+
+const page = (node: ReactNode) => <Suspense fallback={null}>{node}</Suspense>;
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -95,38 +117,29 @@ function Gate() {
   }
 
   const modules = visibleNavItems(me.data.permissions).filter((i) => i.href !== '/');
+  const canSeeOrders = me.data.permissions.some(
+    (p) => p === 'orders.view_all' || p === 'orders.view_own',
+  );
 
   return (
     <CurrentUserContext.Provider value={me.data}>
       <Routes>
+        {/* Ticket imprimible: sin menú */}
+        {canSeeOrders && <Route path="ticket/:id" element={page(<TicketPage />)} />}
         <Route element={<AppShell />}>
-          <Route
-            index
-            element={
-              <Suspense fallback={null}>
-                <InicioPage />
-              </Suspense>
-            }
-          />
-          {modules.map((item) => (
-            <Route
-              key={item.href}
-              path={item.href.slice(1)}
-              element={
-                <Suspense fallback={null}>
-                  <ModulePlaceholder item={item} />
-                </Suspense>
-              }
-            />
-          ))}
-          <Route
-            path="*"
-            element={
-              <Suspense fallback={null}>
-                <NotFoundPage />
-              </Suspense>
-            }
-          />
+          <Route index element={page(<InicioPage />)} />
+          {modules.map((item) => {
+            const Page = PAGES[item.href];
+            return (
+              <Route
+                key={item.href}
+                path={item.href.slice(1)}
+                element={page(Page ? <Page /> : <ModulePlaceholder item={item} />)}
+              />
+            );
+          })}
+          {canSeeOrders && <Route path="ordenes/:id" element={page(<OrderDetailPage />)} />}
+          <Route path="*" element={page(<NotFoundPage />)} />
         </Route>
       </Routes>
     </CurrentUserContext.Provider>
