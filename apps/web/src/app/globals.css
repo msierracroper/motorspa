@@ -1,0 +1,156 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/*
+ * Sistema de diseño "Espuma" (SPEC decisión 19).
+ * Fresco y amable: blanco + azul agua, tarjetas suaves, formas redondeadas.
+ * Títulos: Bricolage Grotesque · Texto: Figtree.
+ * Solo tema claro (uso en exteriores); la placa usa un amarillo suave.
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-bricolage), var(--font-figtree), ui-sans-serif, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Tokens propios de MotoSpa */
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-plate: var(--plate);
+  --color-plate-ink: var(--plate-ink);
+  --color-plate-edge: var(--plate-edge);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #eef6fa;
+  --foreground: #0c2a3a;
+  --card: #ffffff;
+  --card-foreground: #0c2a3a;
+  --popover: #ffffff;
+  --popover-foreground: #0c2a3a;
+  --primary: #0a7fc2;
+  --primary-foreground: #ffffff;
+  --secondary: #e6f2f8;
+  --secondary-foreground: #0c2a3a;
+  --muted: #e6f2f8;
+  --muted-foreground: #4f6b7a;
+  --accent: #dcecf4;
+  --accent-foreground: #0c2a3a;
+  --destructive: #c8372d;
+  --border: #d6e6ee;
+  --input: #c9dde7;
+  --ring: #0a7fc2;
+  --chart-1: #0a7fc2;
+  --chart-2: #12b5c9;
+  --chart-3: #16a36b;
+  --chart-4: #e48a1b;
+  --chart-5: #4f6b7a;
+  --radius: 1rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0c2a3a;
+  --sidebar-primary: #0a7fc2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e6f2f8;
+  --sidebar-accent-foreground: #0c2a3a;
+  --sidebar-border: #d6e6ee;
+  --sidebar-ring: #0a7fc2;
+
+  --brand: #0a7fc2;
+  --brand-2: #12b5c9;
+  --success: #0d7a4f;
+  --success-soft: #d8f3e6;
+  --warning: #a35a00;
+  --warning-soft: #fdebd3;
+  --info: #0a7fc2;
+  --info-soft: #dcecf9;
+
+  /* Placa de moto: amarillo suave "Mantequilla" (más tenue que el real) */
+  --plate: #fbe7a1;
+  --plate-ink: #2e2a17;
+  --plate-edge: rgb(46 42 23 / 0.45);
+}
+
+@utility shadow-soft {
+  box-shadow:
+    0 1px 2px rgb(12 42 58 / 0.06),
+    0 8px 24px -12px rgb(12 42 58 / 0.18);
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
