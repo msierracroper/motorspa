@@ -42,7 +42,7 @@
 
 | Capa | Tecnología | Notas |
 |---|---|---|
-| Frontend | Next.js (App Router) + TypeScript + Tailwind + shadcn/ui | PWA, mobile-first |
+| Frontend | Vite + React 19 + TypeScript + React Router 7 + TanStack Query 5 + Tailwind 4 + shadcn/ui | SPA/PWA, mobile-first (decisión 20) |
 | Backend | NestJS + TypeScript | API REST, validación con class-validator / zod |
 | Base de datos | PostgreSQL (Supabase) | Datos relacionales y transaccionales (dinero, inventario) |
 | ORM | Drizzle | Migraciones versionadas (decisión 11) |
@@ -484,7 +484,7 @@ Implementación: permisos como códigos (`orders.checkin`, `payments.void`, `inv
 ```
 motospa/
 ├── apps/
-│   ├── web/                 # Next.js
+│   ├── web/                 # Vite + React (SPA)
 │   └── api/                 # NestJS
 │       └── src/modules/
 │           ├── auth/  tenants/  branches/  users/  roles/  audit/
@@ -530,6 +530,7 @@ motospa/
 | 16 | 2026-10-19 | Deploy de front y back en Vercel (dos proyectos desde el mismo repo). La API usa el pooler de Supabase en modo transacción | Simplificar la infraestructura. Nota: el plan Hobby de Vercel es solo uso no comercial; producción requiere plan Pro |
 | 17 | 2026-10-19 | El nombre de usuario es único en todo el sistema (no solo por tenant) y el `tenant_id` viaja en `app_metadata` del usuario de Supabase Auth | El correo sintético es global; `app_metadata` no es editable por el usuario |
 | 19 | 2026-10-19 | Dirección visual **"Espuma"**: blanco + azul agua (`#0a7fc2` → `#12b5c9`), tarjetas suaves y redondeadas, Bricolage Grotesque (títulos) + Figtree (texto), solo tema claro. La placa de moto es el ancla visual, en amarillo suave "Mantequilla" (`#fbe7a1`) en lugar del amarillo real | Elegida por el usuario entre 3 propuestas (Pista, Garaje, Espuma); el amarillo real se percibía chillón |
+| 20 | 2026-10-19 | Frontend migrado de Next.js 16 a **Vite + React 19 (SPA)** con React Router 7 y TanStack Query 5, siguiendo la estructura de GenericSoft (`src/api`, `src/app`, `src/features`). La sesión de Supabase vive en el navegador; el backend sigue verificando cada petición | App interna detrás de login: no necesita SSR ni SEO; las reglas de Cache Components de Next 16 añadían complejidad; alineación con los demás proyectos del usuario. Respaldo de la versión Next en el commit `09366cf` |
 | 18 | 2026-10-19 | Los SQL de `supabase/migrations/` son la fuente de verdad del esquema; `apps/api/src/db/schema.ts` (Drizzle) es solo un espejo para consultas | El usuario ejecuta los scripts manualmente (decisión 14) |
 
 ### Preguntas abiertas (resolver antes o durante la Fase 0/1)

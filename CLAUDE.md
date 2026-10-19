@@ -28,7 +28,7 @@ La fuente de verdad es [SPEC.md](SPEC.md). Léelo antes de proponer o escribir c
 
 ## Diseño (SPEC decisión 19: "Espuma")
 
-- Tokens en `apps/web/src/app/globals.css` (colores, `bg-brand-gradient`, `shadow-soft`, `bg-plate`); no usar colores literales en componentes.
+- Tokens en `apps/web/src/styles/index.css` (colores, `bg-brand-gradient`, `shadow-soft`, `bg-plate`); no usar colores literales en componentes.
 - Toda moto se muestra con `<Plate plate="ABC12D" />` (`components/plate.tsx`).
 - Una acción principal por pantalla (`<Button size="touch">`); toques ≥ 48 px con 8 px de separación.
 - Estados siempre con color **y** texto (`success`/`warning`/`info` + `-soft`).
@@ -36,7 +36,11 @@ La fuente de verdad es [SPEC.md](SPEC.md). Léelo antes de proponer o escribir c
 
 ## Estructura
 
-- `apps/web` — Next.js 16 (App Router, Cache Components, `proxy.ts`), Tailwind 4, shadcn/ui (Base UI). Leer `apps/web/AGENTS.md`.
+- `apps/web` — Vite + React 19 (SPA), React Router 7, TanStack Query 5, Tailwind 4, shadcn/ui (Base UI), oxlint. Misma organización que GenericSoft:
+  - `src/api/` — **único** lugar que habla con Supabase (`supabase.ts`, solo sesión) y con el backend (`client.ts` → `apiFetch`). Las pantallas usan los hooks de `api/`, nunca `fetch` ni `supabase` directo.
+  - `src/app/` — `App.tsx` (decide qué ve cada quien según sesión y permisos), `AppShell.tsx` (menú), `currentUser.ts`.
+  - `src/features/<módulo>/` — pantallas por módulo, cargadas con `lazy()`.
+  - Polling del tablero con `refetchInterval: 10_000` de TanStack Query (decisión 9).
 - `apps/api` — NestJS 12 (ESM, imports con `.js`), Drizzle (`src/db/schema.ts` es espejo del SQL), Vitest.
 - `packages/shared` — permisos, roles y tipos compartidos.
 - `supabase/` — migraciones y `seed.sql`.

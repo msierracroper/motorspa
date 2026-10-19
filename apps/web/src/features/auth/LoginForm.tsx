@@ -1,16 +1,11 @@
-'use client';
-
-import { usernameToEmail } from '@motospa/shared';
-import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
+import { signIn } from '@/api/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createClient } from '@/lib/supabase/client';
 
 export function LoginForm() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -22,18 +17,13 @@ export function LoginForm() {
 
     setPending(true);
     setError(null);
-    const { error } = await createClient().auth.signInWithPassword({
-      email: usernameToEmail(username),
-      password,
-    });
-    setPending(false);
-
-    if (error) {
+    try {
+      // Al iniciar sesión, App.tsx detecta la sesión y muestra la app.
+      await signIn(username, password);
+    } catch {
       setError('Usuario o contraseña incorrectos');
-      return;
+      setPending(false);
     }
-    router.replace('/');
-    router.refresh();
   }
 
   return (

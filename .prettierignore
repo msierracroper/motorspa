@@ -1,10 +1,7 @@
 node_modules
 dist
-.next
 .turbo
 coverage
 pnpm-lock.yaml
-apps/web/next-env.d.ts
-apps/web/AGENTS.md
 supabase/.temp
 SPEC.md

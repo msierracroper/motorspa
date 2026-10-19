@@ -1,5 +1,3 @@
-'use client';
-
 import {
   BarChart3,
   BookOpen,
@@ -21,16 +19,17 @@ import {
   Wrench,
   XIcon,
 } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
-import { signOut } from '@/app/actions';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { signOut } from '@/api/auth';
 import { Plate } from '@/components/plate';
 import { Button } from '@/components/ui/button';
-import type { NavItem } from '@/lib/navigation';
+import { visibleNavItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
+import { useCurrentUser } from './currentUser';
 
-/** Íconos por ruta (los componentes no se pueden pasar del servidor al cliente). */
+/** Íconos por ruta. */
 const ICONS: Record<string, LucideIcon> = {
   '/': House,
   '/recepcion': Car,
@@ -52,15 +51,18 @@ const ICONS: Record<string, LucideIcon> = {
 /** Máximo de opciones en la barra inferior del celular (regla: ≤ 5 contando "Más"). */
 const BOTTOM_NAV_MAX = 4;
 
-interface AppShellProps {
-  user: { fullName: string; roles: string[] };
-  items: NavItem[];
-  children: ReactNode;
-}
-
-export function AppShell({ user, items, children }: AppShellProps) {
-  const pathname = usePathname();
+/** Armazón autenticado: panel lateral (PC), barra inferior (celular) y la página actual. */
+export function AppShell() {
+  const user = useCurrentUser();
+  const items = visibleNavItems(user.permissions);
+  const { pathname } = useLocation();
+  const queryClient = useQueryClient();
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const handleSignOut = () => {
+    signOut();
+    queryClient.clear(); // descarta datos del usuario anterior
+  };
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
@@ -80,7 +82,7 @@ export function AppShell({ user, items, children }: AppShellProps) {
     return (
       <Link
         key={item.href}
-        href={item.href}
+        to={item.href}
         onClick={() => setSheetOpen(false)}
         aria-current={active ? 'page' : undefined}
         className={cn(
@@ -107,11 +109,14 @@ export function AppShell({ user, items, children }: AppShellProps) {
           <p className="truncate text-sm text-muted-foreground">{user.roles.join(', ')}</p>
         </div>
       </div>
-      <form action={signOut}>
-        <Button type="submit" variant="outline" className="h-11 w-full gap-2 rounded-full bg-card">
-          <LogOutIcon /> Salir
-        </Button>
-      </form>
+      <Button
+        type="button"
+        variant="outline"
+        className="h-11 w-full gap-2 rounded-full bg-card"
+        onClick={handleSignOut}
+      >
+        <LogOutIcon /> Salir
+      </Button>
     </div>
   );
 
@@ -123,7 +128,10 @@ export function AppShell({ user, items, children }: AppShellProps) {
           <div className="px-2 pt-2">
             <Plate plate="MOTO SPA" raw size="md" className="-rotate-2" />
           </div>
-          <nav aria-label="Principal" className="flex flex-1 flex-col gap-1 overflow-y-auto">
+          <nav
+            aria-label="Principal"
+            className="-mr-2 flex flex-1 flex-col gap-1 overflow-y-auto pr-2 [scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]"
+          >
             {items.map(navLink)}
           </nav>
           {userBox}
@@ -144,7 +152,9 @@ export function AppShell({ user, items, children }: AppShellProps) {
           </button>
         </header>
 
-        <main className="flex-1 px-4 pt-2 pb-32 lg:p-8">{children}</main>
+        <main className="flex-1 px-4 pt-2 pb-32 lg:p-8">
+          <Outlet />
+        </main>
 
         {/* Celular: barra inferior flotante */}
         <nav
@@ -163,7 +173,7 @@ export function AppShell({ user, items, children }: AppShellProps) {
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  to={item.href}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
                     'flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-medium transition-colors',

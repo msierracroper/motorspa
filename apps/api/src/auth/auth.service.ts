@@ -10,46 +10,51 @@ import type { VerifiedToken } from './token-verifier.service.js';
 export class AuthService {
   constructor(private readonly db: DbService) {}
 
-  /** Carga el usuario interno, sus sedes, roles y permisos (bajo RLS del tenant). */
+  /**
+   * Carga el usuario interno, sus sedes, roles y permisos (bajo RLS del tenant)
+   * en una sola consulta: una fila por permiso de cada rol asignado.
+   */
   async loadContext(token: VerifiedToken): Promise<AuthContext> {
     return this.db.withTenant({ tenantId: token.tenantId }, async (tx) => {
-      const [user] = await tx
-        .select()
+      const rows = await tx
+        .select({
+          userId: users.id,
+          username: users.username,
+          fullName: users.fullName,
+          branchId: userBranchRoles.branchId,
+          roleName: roles.name,
+          permission: rolePermissions.permissionCode,
+        })
         .from(users)
+        .leftJoin(userBranchRoles, eq(userBranchRoles.userId, users.id))
+        .leftJoin(roles, and(eq(roles.id, userBranchRoles.roleId), isNull(roles.deletedAt)))
+        .leftJoin(rolePermissions, eq(rolePermissions.roleId, roles.id))
         .where(
           and(
             eq(users.authUserId, token.authUserId),
             eq(users.status, 'ACTIVE'),
             isNull(users.deletedAt),
           ),
-        )
-        .limit(1);
-      if (!user) throw new UnauthorizedException('Usuario inactivo o inexistente');
+        );
 
-      const rows = await tx
-        .select({
-          branchId: userBranchRoles.branchId,
-          roleName: roles.name,
-          permission: rolePermissions.permissionCode,
-        })
-        .from(userBranchRoles)
-        .innerJoin(roles, and(eq(roles.id, userBranchRoles.roleId), isNull(roles.deletedAt)))
-        .leftJoin(rolePermissions, eq(rolePermissions.roleId, roles.id))
-        .where(eq(userBranchRoles.userId, user.id));
+      const [user] = rows;
+      if (!user) throw new UnauthorizedException('Usuario inactivo o inexistente');
 
       const unique = <T>(values: (T | null)[]) => [
         ...new Set(values.filter((v): v is T => v !== null)),
       ];
+      // Un rol borrado deja la sede sin rol: no cuenta como acceso a esa sede.
+      const withRole = rows.filter((r) => r.roleName !== null);
 
       return {
         authUserId: token.authUserId,
         tenantId: token.tenantId,
-        userId: user.id,
+        userId: user.userId,
         username: user.username,
         fullName: user.fullName,
-        branchIds: unique(rows.map((r) => r.branchId)),
-        roles: unique(rows.map((r) => r.roleName)),
-        permissions: unique(rows.map((r) => r.permission as PermissionCode | null)),
+        branchIds: unique(withRole.map((r) => r.branchId)),
+        roles: unique(withRole.map((r) => r.roleName)),
+        permissions: unique(withRole.map((r) => r.permission as PermissionCode | null)),
       };
     });
   }

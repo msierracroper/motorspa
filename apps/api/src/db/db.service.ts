@@ -31,9 +31,10 @@ export class DbService implements OnModuleDestroy {
    */
   async withTenant<T>(scope: TenantScope, fn: (tx: Tx) => Promise<T>): Promise<T> {
     return this.db.transaction(async (tx) => {
-      await tx.execute(sql`set local role app_api`);
+      // Un solo viaje a la base: set_config('role', …, true) equivale a SET LOCAL ROLE.
       await tx.execute(
-        sql`select set_config('app.tenant_id', ${scope.tenantId}, true),
+        sql`select set_config('role', 'app_api', true),
+                   set_config('app.tenant_id', ${scope.tenantId}, true),
                    set_config('app.user_id', ${scope.userId ?? ''}, true)`,
       );
       return fn(tx);

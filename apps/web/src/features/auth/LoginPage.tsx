@@ -1,12 +1,9 @@
-import type { Metadata } from 'next';
 import { Plate } from '@/components/plate';
-import { LoginForm } from './login-form';
-
-export const metadata: Metadata = { title: 'Ingresar' };
+import { LoginForm } from './LoginForm';
 
 export default function LoginPage() {
   return (
-    <main className="relative flex flex-1 items-center justify-center overflow-hidden px-4 py-10">
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-10">
       {/* Fondo: burbujas suaves de la identidad Espuma */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 -right-16 size-72 rounded-full bg-brand-2/15" />

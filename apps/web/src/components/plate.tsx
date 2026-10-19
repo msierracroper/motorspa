@@ -1,3 +1,4 @@
+import { formatPlate } from '@/lib/plate';
 import { cn } from '@/lib/utils';
 
 const sizes = {
@@ -12,12 +13,6 @@ interface PlateProps {
   /** Muestra el texto tal cual, sin formato de placa (p. ej. el logotipo). */
   raw?: boolean;
   className?: string;
-}
-
-/** Formato visual de placa de moto colombiana: ABC12D → "ABC 12D". */
-export function formatPlate(plate: string): string {
-  const p = plate.replace(/\s+/g, '').toUpperCase();
-  return p.length === 6 ? `${p.slice(0, 3)} ${p.slice(3)}` : p;
 }
 
 /** Placa de moto en amarillo suave: el ancla visual de cada moto (SPEC decisión 19). */
