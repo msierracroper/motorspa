@@ -8,10 +8,12 @@
 import { SYSTEM_ROLES, usernameToEmail, type SystemRoleName } from '@motospa/shared';
 import { createClient } from '@supabase/supabase-js';
 import postgres from 'postgres';
+import { hashPin } from '../src/auth/pin.js';
 
 const TENANT_ID = '00000000-0000-4000-8000-000000000001';
 const BRANCH_ID = '00000000-0000-4000-8000-000000000101';
 const PASSWORD = process.env.SEED_PASSWORD ?? 'MotoSpa2026!';
+const PIN = process.env.SEED_PIN ?? '1234';
 
 const DEMO_USERS: { username: string; fullName: string; role: SystemRoleName }[] = [
   { username: 'admin', fullName: 'Administrador Demo', role: SYSTEM_ROLES.ADMIN },
@@ -56,6 +58,8 @@ async function upsertAuthUser(email: string): Promise<string> {
 }
 
 async function main() {
+  const [{ exists: hasEmployees } = { exists: false }] = await sql<{ exists: boolean }[]>`
+    select to_regclass('public.employees') is not null as exists`;
   for (const u of DEMO_USERS) {
     const authUserId = await upsertAuthUser(usernameToEmail(u.username));
 
@@ -76,11 +80,27 @@ async function main() {
         from public.roles r
         where r.tenant_id = ${TENANT_ID} and r.name = ${u.role}
         on conflict do nothing`;
+
+      // Fase 1 (D-9): los lavadores son empleados para poder asignarles servicios.
+      if (u.role === SYSTEM_ROLES.WASHER && hasEmployees) {
+        await tx`
+          insert into public.employees (tenant_id, user_id, full_name)
+          values (${TENANT_ID}, ${user!.id}, ${u.fullName})
+          on conflict (user_id) do nothing`;
+      }
+      // PIN para autorizar descuentos (D-7).
+      if (u.role === SYSTEM_ROLES.ADMIN || u.role === SYSTEM_ROLES.SUPERVISOR) {
+        await tx`update public.users set pin_hash = ${await hashPin(PIN)} where id = ${user!.id}`;
+      }
     });
 
     console.log(`✔ ${u.username.padEnd(11)} → ${u.role}`);
   }
   console.log(`\nContraseña de todos los usuarios demo: ${PASSWORD}`);
+  console.log(`PIN de autorización (admin y supervisor): ${PIN}`);
+  if (!hasEmployees) {
+    console.log('⚠ Falta la migración de la Fase 1: los lavadores aún no quedaron como empleados.');
+  }
 }
 
 main()

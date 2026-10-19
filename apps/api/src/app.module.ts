@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { validateEnv } from './config/env.js';
 import { DbModule } from './db/db.module.js';
 import { HealthController } from './health/health.controller.js';
+import { OperationsModule } from './operations.module.js';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { HealthController } from './health/health.controller.js';
     DbModule,
     AuditModule,
     AuthModule,
+    OperationsModule,
   ],
   controllers: [HealthController],
 })

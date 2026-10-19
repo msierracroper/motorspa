@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import type { PermissionCode } from '@motospa/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 import { DbService } from '../db/db.service.js';
-import { rolePermissions, roles, userBranchRoles, users } from '../db/schema.js';
+import { employees, rolePermissions, roles, userBranchRoles, users } from '../db/schema.js';
 import type { AuthContext } from './auth-context.js';
 import type { VerifiedToken } from './token-verifier.service.js';
 
@@ -21,11 +21,20 @@ export class AuthService {
           userId: users.id,
           username: users.username,
           fullName: users.fullName,
+          employeeId: employees.id,
           branchId: userBranchRoles.branchId,
           roleName: roles.name,
           permission: rolePermissions.permissionCode,
         })
         .from(users)
+        .leftJoin(
+          employees,
+          and(
+            eq(employees.userId, users.id),
+            eq(employees.active, true),
+            isNull(employees.deletedAt),
+          ),
+        )
         .leftJoin(userBranchRoles, eq(userBranchRoles.userId, users.id))
         .leftJoin(roles, and(eq(roles.id, userBranchRoles.roleId), isNull(roles.deletedAt)))
         .leftJoin(rolePermissions, eq(rolePermissions.roleId, roles.id))
@@ -50,6 +59,7 @@ export class AuthService {
         authUserId: token.authUserId,
         tenantId: token.tenantId,
         userId: user.userId,
+        employeeId: user.employeeId,
         username: user.username,
         fullName: user.fullName,
         branchIds: unique(withRole.map((r) => r.branchId)),

@@ -41,14 +41,15 @@ describe('migración fase1_operations (Postgres real con PGlite)', () => {
   });
 
   it('el seed es idempotente', async () => {
-    const { readFileSync } = await import('node:fs');
-    const { join, dirname } = await import('node:path');
-    const { fileURLToPath } = await import('node:url');
-    const seed = join(
-      dirname(fileURLToPath(import.meta.url)),
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const url = await import('node:url');
+    const readFileSync = (f: string) => fs.readFileSync(f, 'utf8');
+    const seed = path.join(
+      path.dirname(url.fileURLToPath(import.meta.url)),
       '../../../../supabase/seed_fase1.sql',
     );
-    await db.exec(readFileSync(seed, 'utf8'));
+    await db.exec(readFileSync(seed));
     const { rows } = await db.query<{ n: number }>(
       'select count(*)::int as n from public.service_prices',
     );

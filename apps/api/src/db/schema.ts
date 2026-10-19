@@ -109,3 +109,5 @@ export const auditLogs = pgTable('audit_logs', {
   ip: inet('ip'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+export * from './schema-fase1.js';

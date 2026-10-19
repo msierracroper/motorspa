@@ -9,7 +9,7 @@ import { Reflector } from '@nestjs/core';
 import type { PermissionCode } from '@motospa/shared';
 import { hasPermissions, type AuthenticatedRequest } from './auth-context.js';
 import { AuthService } from './auth.service.js';
-import { IS_PUBLIC_KEY, PERMISSIONS_KEY } from './decorators.js';
+import { ANY_PERMISSIONS_KEY, IS_PUBLIC_KEY, PERMISSIONS_KEY } from './decorators.js';
 import { TokenVerifierService } from './token-verifier.service.js';
 
 /**
@@ -38,7 +38,12 @@ export class AuthGuard implements CanActivate {
 
     const required =
       this.reflector.getAllAndOverride<PermissionCode[]>(PERMISSIONS_KEY, targets) ?? [];
-    if (!hasPermissions(req.auth.permissions, required)) {
+    const any =
+      this.reflector.getAllAndOverride<PermissionCode[]>(ANY_PERMISSIONS_KEY, targets) ?? [];
+    if (
+      !hasPermissions(req.auth.permissions, required) ||
+      (any.length > 0 && !any.some((p) => req.auth!.permissions.includes(p)))
+    ) {
       throw new ForbiddenException('No tienes permiso para realizar esta acción');
     }
     return true;
